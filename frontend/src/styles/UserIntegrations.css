@@ -10,7 +10,7 @@
 }
 
 .user-header {
-    margin-bottom: calc(var(--spacing-unit) * 8);
+    margin-bottom: calc(var(--spacing-unit) * 6);
 }
 
 .user-title {
@@ -50,6 +50,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    flex-direction: column;
     margin-bottom: calc(var(--spacing-unit) * 3);
 }
 
@@ -60,13 +61,14 @@
 }
 
 .integration-icon {
-    width: 40px;
-    height: 40px;
     display: flex;
+    width: 50%;
     align-items: center;
     justify-content: center;
     background-color: var(--bg-subtle);
     border-radius: 8px;
+    margin: 0 auto;
+    margin-bottom: calc(var(--spacing-unit) * 2);
 }
 
 .integration-name {

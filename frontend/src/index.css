@@ -3,13 +3,13 @@
     /* Base colors */
     --primary-color: #000000;
     --secondary-color: #666666;
-    --accent-color: #88786C;
+    --accent-color: rgba(8, 9, 10, 0.16);;
 
     /* Background colors */
     --background-color: #FAFAFA;
     --bg-subtle: rgba(248, 249, 250, 0.65);
     --bg-hover: rgba(255, 255, 255, 0.95);
-    --border-subtle: rgba(8, 9, 10, 0.04);
+    --border-subtle: rgba(8, 9, 10, 0.08);
 
     /* Additional colors */
     --red-tag: #FF3B30;

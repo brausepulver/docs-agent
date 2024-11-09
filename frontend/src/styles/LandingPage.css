@@ -109,6 +109,7 @@
 
 .new-feature-tag:hover {
     background-color: var(--bg-hover);
+    border-color: var(--accent-color);
 }
 
 .new-feature-tag:hover .tag-new {
