@@ -46,12 +46,12 @@
     transform: translateY(-2px);
 }
 
-.integration-header {
+.user-page .integration-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    flex-direction: column;
     margin-bottom: calc(var(--spacing-unit) * 3);
+    flex-direction: row;
 }
 
 .integration-info {
@@ -60,29 +60,29 @@
     gap: calc(var(--spacing-unit) * 2);
 }
 
-.integration-icon {
+.user-page .integration-icon {
+    width: 40px;
+    height: 40px;
     display: flex;
-    width: 50%;
     align-items: center;
     justify-content: center;
     background-color: var(--bg-subtle);
     border-radius: 8px;
-    margin: 0 auto;
-    margin-bottom: calc(var(--spacing-unit) * 2);
+    margin-bottom: 0;
 }
 
-.integration-name {
+.user-page .integration-name {
     font-size: 18px;
     font-weight: 500;
 }
 
-.integration-description {
+.user-page .integration-description {
     color: var(--secondary-color);
     font-size: 14px;
     margin-bottom: calc(var(--spacing-unit) * 3);
 }
 
-.integration-status {
+.user-page .integration-status {
     display: flex;
     align-items: center;
     gap: calc(var(--spacing-unit));
