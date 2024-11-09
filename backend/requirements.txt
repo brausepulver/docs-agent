@@ -5,3 +5,9 @@ llama-index-embeddings-nvidia
 google-api-python-client
 google-auth
 google-auth-httplib2
+python-jose[cryptography]
+python-multipart
+requests
+pydantic-settings
+jwt
+uvicorn

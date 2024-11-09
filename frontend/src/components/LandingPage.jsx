@@ -1,12 +1,14 @@
-// frontend/src/components/LandingPage.jsx
 import { Link } from 'react-router-dom';
-import { ChevronRight, Github, LogIn } from 'lucide-react';
+import { ChevronRight, Github, LogIn, LogOut } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 import IntegrationSection from './IntegrationSection';
 import Footer from './Footer';
 
 import '../styles/LandingPage.css';
 
 const LandingPage = () => {
+    const { isAuthenticated, logout, user } = useAuth();
+
     const scrollToSection = (e, id) => {
         e.preventDefault();
         const element = document.querySelector(id);
@@ -16,6 +18,49 @@ const LandingPage = () => {
                 block: 'start',
             });
         }
+    };
+
+    const renderAuthButtons = () => {
+        if (isAuthenticated) {
+            return (
+                <div className="nav-buttons">
+                    <Link to="/integrations" className="btn-secondary">
+                        Dashboard
+                    </Link>
+                    <button onClick={logout} className="btn-primary">
+                        <LogOut size={18} />
+                        <span>Sign out</span>
+                    </button>
+                </div>
+            );
+        }
+
+        return (
+            <div className="nav-buttons">
+                <Link to="/login" className="btn-secondary">
+                    <LogIn size={18} />
+                    <span>Sign in</span>
+                </Link>
+                <Link to="/register" className="btn-primary">Start for free</Link>
+            </div>
+        );
+    };
+
+    const renderHeroCTA = () => {
+        if (isAuthenticated) {
+            return (
+                <div className="hero-cta">
+                    <Link to="/integrations" className="btn-primary btn-large">Go to Dashboard</Link>
+                </div>
+            );
+        }
+
+        return (
+            <div className="hero-cta">
+                <Link to="/register" className="btn-primary btn-large">Start for free</Link>
+                <p className="hero-note">No credit card required. Cancel anytime.</p>
+            </div>
+        );
     };
 
     return (
@@ -32,13 +77,7 @@ const LandingPage = () => {
                         </a>
                     </div>
                 </div>
-                <div className="nav-buttons">
-                    <Link to="/login" className="btn-secondary">
-                        <LogIn size={18} />
-                        <span>Sign in</span>
-                    </Link>
-                    <Link to="/register" className="btn-primary">Start for free</Link>
-                </div>
+                {renderAuthButtons()}
             </nav>
 
             <main className="hero">
@@ -60,10 +99,7 @@ const LandingPage = () => {
                     Get smart suggestions, cross-reference your entire document repository, and collaborate smarter.
                 </p>
 
-                <div className="hero-cta">
-                    <Link to="/register" className="btn-primary btn-large">Start for free</Link>
-                    <p className="hero-note">No credit card required. Cancel anytime.</p>
-                </div>
+                {renderHeroCTA()}
 
                 <div className="hero-image">
                     <img 
