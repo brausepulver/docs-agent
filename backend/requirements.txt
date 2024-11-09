@@ -1,0 +1,7 @@
+fastapi
+python-dotenv
+llama-index
+llama-index-embeddings-nvidia
+google-api-python-client
+google-auth
+google-auth-httplib2
