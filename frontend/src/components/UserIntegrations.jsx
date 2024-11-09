@@ -14,7 +14,7 @@ const UserIntegrations = () => {
         {
             id: 'github',
             name: 'GitHub',
-            description: 'Sync your GitHub repositories to manage documentation effortlessly.',
+            description: 'Sync your GitHub repositories to manage code and documents effortlessly.',
             icon: '/github-logo.png',
             connected: true
         },
@@ -41,7 +41,7 @@ const UserIntegrations = () => {
                 <div className="user-header">
                     <h1 className="user-title">Integrations</h1>
                     <p className="user-subtitle">
-                        Connect your favorite tools to enhance your documentation workflow
+                        Connect your favorite tools to enhance your writing workflow
                     </p>
                 </div>
 

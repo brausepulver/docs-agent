@@ -10,7 +10,7 @@ const IntegrationSection = () => {
         },
         {
             name: 'GitHub',
-            description: 'Manage documentation effortlessly',
+            description: 'Manage code and documents effortlessly',
             logo: '/github-logo.png'
         },
         {
@@ -28,7 +28,7 @@ const IntegrationSection = () => {
                         Seamless integration with tools you love
                     </h3>
                     <p className="integration-subtitle">
-                        Connect your favorite tools and streamline your documentation process
+                        Connect your favorite tools and streamline your writing process
                     </p>
                 </div>
 

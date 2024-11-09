@@ -142,10 +142,6 @@ Key features:
 - CORS configured for frontend
 - Structured for scalability
 
-API endpoints:
-- `/api/auth/protected`: Test protected route
-- `/api/auth/user-profile`: Get user profile
-
 ## Deployment
 
 For production deployment:

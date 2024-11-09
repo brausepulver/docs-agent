@@ -16,46 +16,12 @@ export const AuthProvider = ({ children }) => {
         isLoading
     } = useAuth0();
 
-    const [userProfile, setUserProfile] = useState(null);
-    const [authLoading, setAuthLoading] = useState(true);
-
-    useEffect(() => {
-        const getUserProfile = async () => {
-            if (isAuthenticated && user) {
-                try {
-                    const token = await getAccessTokenSilently();
-
-                    // Create an axios instance for authenticated requests
-                    const authAxios = axios.create({
-                        baseURL: API_URL,
-                        headers: {
-                            Authorization: `Bearer ${token}`
-                        }
-                    });
-
-                    // Fetch user profile from your backend
-                    const response = await authAxios.get('/api/auth/user-profile');
-                    setUserProfile(response.data);
-                } catch (error) {
-                    console.error('Error fetching user profile:', error);
-                    // Handle error appropriately - maybe set an error state
-                }
-            }
-            setAuthLoading(false);
-        };
-
-        if (!isLoading) {
-            getUserProfile();
-        }
-    }, [isAuthenticated, user, getAccessTokenSilently, isLoading]);
-
     const handleLogout = () => {
         logout({
             logoutParams: {
                 returnTo: window.location.origin
             }
         });
-        setUserProfile(null);
     };
 
     // Create authenticated axios instance
@@ -74,8 +40,7 @@ export const AuthProvider = ({ children }) => {
         login: loginWithRedirect,
         logout: handleLogout,
         user,
-        userProfile,
-        isLoading: isLoading || authLoading,
+        isLoading: isLoading,
         createAuthenticatedAxios
     };
 

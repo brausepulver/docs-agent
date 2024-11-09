@@ -22,22 +22,22 @@ const auth0Config = {
 function App() {
     return (
         <Auth0Provider {...auth0Config}>
-        <AuthProvider>
-        <Router>
-        <Routes>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/register" element={<AuthPage />} />
-        <Route path="/login" element={<AuthPage />} />
-        <Route element={
-            <ProtectedRoute>
-            <DashboardLayout />
-            </ProtectedRoute>
-        }>
-        <Route path="/integrations" element={<UserIntegrations />} />
-        </Route>
-        </Routes>
-        </Router>
-        </AuthProvider>
+            <AuthProvider>
+                <Router>
+                    <Routes>
+                        <Route path="/" element={<LandingPage />} />
+                        <Route path="/register" element={<AuthPage />} />
+                        <Route path="/login" element={<AuthPage />} />
+                        <Route element={
+                            <ProtectedRoute>
+                            <DashboardLayout />
+                            </ProtectedRoute>
+                        }>
+                        <Route path="/integrations" element={<UserIntegrations />} />
+                        </Route>
+                    </Routes>
+                </Router>
+            </AuthProvider>
         </Auth0Provider>
     );
 }
