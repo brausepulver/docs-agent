@@ -144,4 +144,8 @@
     .user-subtitle {
         font-size: 18px;
     }
+
+    .user-container {
+        padding: calc(var(--spacing-unit) * 4) calc(var(--spacing-unit) * 2);
+    }
 }
