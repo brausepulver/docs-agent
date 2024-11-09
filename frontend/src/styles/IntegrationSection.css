@@ -1,0 +1,112 @@
+/* frontend/src/styles/IntegrationSection.css */
+.integration-section {
+    margin-top: calc(var(--spacing-unit) * 6);
+    padding: calc(var(--spacing-unit) * 12) calc(var(--spacing-unit) * 6);
+    background: linear-gradient(180deg, var(--background-color) 0%, var(--bg-subtle) 100%);
+}
+
+.integration-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.integration-title {
+    font-size: 48px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    margin-bottom: calc(var(--spacing-unit) * 3);
+}
+
+.integration-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: calc(var(--spacing-unit) * 8);
+}
+
+.integration-card {
+    position: relative;
+    background-color: var(--background-color);
+    padding: calc(var(--spacing-unit) * 8);
+    border-radius: 16px;
+    border: 1px solid var(--border-subtle);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.integration-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border: 2px solid var(--accent-color);
+    border-radius: 16px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.integration-card:hover {
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
+    transform: translateY(-2px);
+}
+
+.integration-card:hover::after {
+    opacity: 1;
+}
+
+.integration-logo-wrapper {
+    height: calc(var(--spacing-unit) * 16);
+    margin-bottom: calc(var(--spacing-unit) * 6);
+    display: flex;
+    align-items: center;
+}
+
+.integration-logo {
+    width: 50%;
+    opacity: 0.9;
+    transition: opacity 0.3s ease;
+}
+
+.integration-card:hover .integration-logo {
+    opacity: 1;
+}
+
+.integration-card-title {
+    font-size: 20px;
+    font-weight: 500;
+    margin-bottom: calc(var(--spacing-unit) * 2);
+}
+
+.integration-card-description {
+    font-size: 16px;
+    color: var(--secondary-color);
+}
+
+.integration-header {
+    text-align: center;
+    margin-bottom: calc(var(--spacing-unit) * 4);
+}
+
+.integration-subtitle {
+    font-size: 22px;
+    color: var(--secondary-color);
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: 1.5;
+}
+
+/* Media Queries */
+@media (max-width: 768px) {
+    .integration-section {
+        padding: calc(var(--spacing-unit) * 8) calc(var(--spacing-unit) * 4);
+    }
+
+    .integration-grid {
+        grid-template-columns: 1fr;
+        gap: calc(var(--spacing-unit) * 4);
+    }
+
+    .integration-title {
+        font-size: 24px;
+        margin-bottom: calc(var(--spacing-unit) * 8);
+    }
+}

@@ -1,0 +1,126 @@
+.footer {
+    background-color: var(--background-color);
+    border-top: 1px solid var(--border-subtle);
+    padding: calc(var(--spacing-unit) * 8) calc(var(--spacing-unit) * 4);
+    margin-top: calc(var(--spacing-unit) * 4);
+}
+
+.footer-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.footer-main {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: calc(var(--spacing-unit) * 8);
+    margin-bottom: calc(var(--spacing-unit) * 8);
+}
+
+.footer-brand {
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--spacing-unit) * 2);
+}
+
+.footer-logo {
+    font-size: 24px;
+    font-weight: 700;
+}
+
+.footer-tagline {
+    color: var(--secondary-color);
+    font-size: 16px;
+    max-width: 200px;
+}
+
+.footer-links-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: calc(var(--spacing-unit) * 8);
+}
+
+.footer-column-title {
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: calc(var(--spacing-unit) * 3);
+}
+
+.footer-nav {
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--spacing-unit) * 2);
+}
+
+.footer-nav a {
+    color: var(--secondary-color);
+    font-size: 16px;
+    transition: color 0.2s ease;
+}
+
+.footer-nav a:hover {
+    color: var(--primary-color);
+}
+
+.footer-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: calc(var(--spacing-unit) * 4);
+    border-top: 1px solid var(--border-subtle);
+}
+
+.footer-legal {
+    display: flex;
+    gap: calc(var(--spacing-unit) * 4);
+    color: var(--secondary-color);
+    font-size: 14px;
+}
+
+.footer-legal a {
+    transition: color 0.2s ease;
+}
+
+.footer-legal a:hover {
+    color: var(--primary-color);
+}
+
+.footer-social {
+    display: flex;
+    gap: calc(var(--spacing-unit) * 3);
+}
+
+.footer-social a {
+    color: var(--secondary-color);
+    transition: color 0.2s ease;
+}
+
+.footer-social a:hover {
+    color: var(--primary-color);
+}
+
+@media (max-width: 768px) {
+    .footer-main {
+        grid-template-columns: 1fr;
+        gap: calc(var(--spacing-unit) * 6);
+    }
+
+    .footer-links-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: calc(var(--spacing-unit) * 6);
+    }
+
+    .footer-bottom {
+        flex-direction: column;
+        gap: calc(var(--spacing-unit) * 4);
+        text-align: center;
+    }
+
+    .footer-legal {
+        flex-direction: column;
+        gap: calc(var(--spacing-unit) * 2);
+    }
+}
+

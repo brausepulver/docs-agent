@@ -1,0 +1,220 @@
+/* frontend/src/styles/LandingPage.css */
+.app {
+    width: 100%;
+    min-height: 100vh;
+}
+
+/* Navbar Styles */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: calc(var(--spacing-unit) * 2) calc(var(--spacing-unit) * 8);
+}
+
+.nav-logo {
+    font-size: 24px;
+    font-weight: 700;
+    flex: 1;
+}
+
+.nav-center {
+    flex: 2;
+    display: flex;
+    justify-content: center;
+}
+
+.nav-links {
+    display: flex;
+    gap: calc(var(--spacing-unit) * 4);
+}
+
+.nav-links a {
+    color: var(--secondary-color);
+    font-size: 16px;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.nav-links a::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background-color: var(--primary-color);
+    transition: width 0.3s ease;
+}
+
+.nav-links a:hover::after {
+    width: 100%;
+}
+
+.nav-buttons {
+    flex: 1;
+    display: flex;
+    gap: calc(var(--spacing-unit) * 2);
+    justify-content: flex-end;
+}
+
+/* Button Styles */
+.btn-primary {
+    background-color: var(--primary-color);
+    color: white;
+    padding: calc(var(--spacing-unit) * 1) calc(var(--spacing-unit) * 2);
+    border-radius: 8px;
+    font-size: 16px;
+    transition: all 0.2s;
+    display: inline-block;
+}
+
+.btn-secondary {
+    background-color: transparent;
+    color: var(--primary-color);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    padding: calc(var(--spacing-unit) * 1) calc(var(--spacing-unit) * 2);
+    border-radius: 8px;
+    font-size: 16px;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: calc(var(--spacing-unit) * 1);
+}
+
+.btn-large {
+    padding: calc(var(--spacing-unit) * 2) calc(var(--spacing-unit) * 4);
+    font-size: 18px;
+}
+
+/* Hero Section Styles */
+.hero {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: calc(var(--spacing-unit) * 12) calc(var(--spacing-unit) * 4);
+    text-align: center;
+}
+
+.new-feature-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-unit);
+    background-color: var(--bg-subtle);
+    padding: calc(var(--spacing-unit) * 1.5) calc(var(--spacing-unit) * 3);
+    border-radius: 100px;
+    margin-bottom: calc(var(--spacing-unit) * 4);
+    transition: all 0.2s;
+    border: 1px solid var(--border-subtle);
+}
+
+.new-feature-tag:hover {
+    background-color: var(--bg-hover);
+}
+
+.new-feature-tag:hover .tag-new {
+    color: var(--red-tag-hover);
+}
+
+.new-feature-tag:hover .tag-feature {
+    color: var(--primary-color);
+}
+
+.new-feature-tag:hover .tag-arrow {
+    transform: translateX(4px);
+}
+
+.tag-new {
+    color: var(--red-tag);
+    font-weight: 600;
+    transition: color 0.2s;
+}
+
+.tag-feature {
+    color: var(--primary-color);
+    display: inline-flex;
+    align-items: center;
+    gap: calc(var(--spacing-unit) * 1);
+    transition: color 0.2s;
+}
+
+.tag-arrow {
+    color: var(--secondary-color);
+    transition: transform 0.2s;
+}
+
+.hero-title {
+    font-size: 64px;
+    line-height: 1.2;
+    margin-bottom: calc(var(--spacing-unit) * 4);
+}
+
+.hero-subtitle {
+    font-size: 24px;
+    line-height: 1.5;
+    color: var(--secondary-color);
+    max-width: 800px;
+    margin: 0 auto calc(var(--spacing-unit) * 6);
+}
+
+.hero-cta {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: calc(var(--spacing-unit) * 2);
+    margin-bottom: calc(var(--spacing-unit) * 8);
+}
+
+.hero-note {
+    font-size: 14px;
+    color: var(--secondary-color);
+}
+
+.hero-image {
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08),
+                0 8px 16px rgba(0, 0, 0, 0.04);
+}
+
+/* Hover Effects */
+.btn-primary:hover {
+    background-color: #333;
+    transform: translateY(-1px);
+}
+
+.btn-secondary:hover {
+    background-color: var(--bg-hover);
+    transform: translateY(-1px);
+}
+
+.nav-links a:hover {
+    color: var(--primary-color);
+}
+
+/* Media Queries */
+@media (max-width: 768px) {
+    .navbar {
+        padding: calc(var(--spacing-unit) * 2);
+        flex-direction: column;
+        gap: calc(var(--spacing-unit) * 2);
+    }
+
+    .nav-center {
+        display: none;
+    }
+
+    .hero-title {
+        font-size: 40px;
+    }
+
+    .hero-subtitle {
+        font-size: 20px;
+    }
+
+    .btn-large {
+        width: 100%;
+    }
+}
