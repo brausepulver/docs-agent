@@ -1,4 +1,3 @@
-// frontend/src/components/IntegrationSection.jsx
 import React from 'react';
 import '../styles/IntegrationSection.css';
 
@@ -22,10 +21,10 @@ const IntegrationSection = () => {
     ];
 
     return (
-        <section className="integration-section">
+        <section className="feature-integration-section">
             <div className="integration-container">
-                <div className="integration-header">
-                    <h3 className="integration-title">
+                <div className="feature-integration-header">
+                    <h3 className="feature-integration-title">
                         Seamless integration with tools you love
                     </h3>
                     <p className="integration-subtitle">
@@ -33,17 +32,17 @@ const IntegrationSection = () => {
                     </p>
                 </div>
 
-                <div className="integration-grid">
+                <div className="feature-integration-grid">
                     {integrations.map((integration) => (
                         <div
                             key={integration.name}
                             className="integration-card"
                         >
-                            <div className="integration-icon">
+                            <div className="feature-integration-icon">
                                 <img
                                     src={integration.logo}
                                     alt={integration.name}
-                                    className="integration-logo"
+                                    className="feature-integration-logo"
                                     onError={(e) => {
                                         e.target.style.backgroundColor = '#f5f5f5';
                                         e.target.style.height = '32px';

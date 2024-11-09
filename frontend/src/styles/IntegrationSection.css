@@ -1,5 +1,4 @@
-/* frontend/src/styles/IntegrationSection.css */
-.integration-section {
+.feature-integration-section {
     margin-top: calc(var(--spacing-unit) * 6);
     padding: calc(var(--spacing-unit) * 12) calc(var(--spacing-unit) * 6);
     background: linear-gradient(180deg, var(--background-color) 0%, var(--bg-subtle) 100%);
@@ -10,7 +9,7 @@
     margin: 0 auto;
 }
 
-.integration-title {
+.feature-integration-title {
     font-size: 48px;
     font-weight: 600;
     letter-spacing: -0.02em;
@@ -18,7 +17,7 @@
     margin-bottom: calc(var(--spacing-unit) * 3);
 }
 
-.integration-grid {
+.feature-integration-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: calc(var(--spacing-unit) * 8);
@@ -53,20 +52,20 @@
     opacity: 1;
 }
 
-.integration-logo-wrapper {
+.feature-integration-logo-wrapper {
     height: calc(var(--spacing-unit) * 16);
     margin-bottom: calc(var(--spacing-unit) * 6);
     display: flex;
     align-items: center;
 }
 
-.integration-logo {
+.feature-integration-logo {
     width: 50%;
     opacity: 0.9;
     transition: opacity 0.3s ease;
 }
 
-.integration-card:hover .integration-logo {
+.integration-card:hover .feature-integration-logo {
     opacity: 1;
 }
 
@@ -81,7 +80,7 @@
     color: var(--secondary-color);
 }
 
-.integration-header {
+.feature-integration-header {
     text-align: center;
     margin-bottom: calc(var(--spacing-unit) * 4);
 }
@@ -94,18 +93,29 @@
     line-height: 1.5;
 }
 
+.feature-integration-icon {
+    display: flex;
+    width: 50%;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--bg-subtle);
+    border-radius: 8px;
+    margin: 0 auto;
+    margin-bottom: calc(var(--spacing-unit) * 2);
+}
+
 /* Media Queries */
 @media (max-width: 768px) {
-    .integration-section {
+    .feature-integration-section {
         padding: calc(var(--spacing-unit) * 8) calc(var(--spacing-unit) * 4);
     }
 
-    .integration-grid {
+    .feature-integration-grid {
         grid-template-columns: 1fr;
         gap: calc(var(--spacing-unit) * 4);
     }
 
-    .integration-title {
+    .feature-integration-title {
         font-size: 24px;
         margin-bottom: calc(var(--spacing-unit) * 8);
     }
