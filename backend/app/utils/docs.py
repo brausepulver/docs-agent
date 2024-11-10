@@ -137,7 +137,7 @@ def list_files(drive_service) -> List[Dict[str, str]]:
             results = drive_service.files().list(
                 q="mimeType='application/vnd.google-apps.document'",
                 pageSize=1000,
-                fields="nextPageToken, files(id, name)",
+                fields="nextPageToken, files(id, name, ownedByMe, owners)",  # Added ownedByMe and owners
                 pageToken=page_token,
                 includeItemsFromAllDrives=True,
                 supportsAllDrives=True

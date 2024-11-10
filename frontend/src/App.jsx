@@ -4,6 +4,7 @@ import { AuthProvider } from './context/AuthContext';
 import LandingPage from './components/LandingPage';
 import UserIntegrations from './components/UserIntegrations';
 import DashboardLayout from './components/DashboardLayout';
+import DocumentList from './components/DocumentList';
 import AuthPage from './components/AuthPage';
 import ProtectedRoute from './components/ProtectedRoute';
 
@@ -12,7 +13,8 @@ const auth0Config = {
     clientId: import.meta.env.VITE_AUTH0_CLIENT_ID,
     authorizationParams: {
         redirect_uri: window.location.origin,
-        audience: import.meta.env.VITE_AUTH0_AUDIENCE
+        audience: import.meta.env.VITE_AUTH0_AUDIENCE,
+        scope: "openid profile email"
     },
     // For better dev experience
     cacheLocation: "localstorage",
@@ -30,10 +32,11 @@ function App() {
                         <Route path="/login" element={<AuthPage />} />
                         <Route element={
                             <ProtectedRoute>
-                            <DashboardLayout />
+                                <DashboardLayout />
                             </ProtectedRoute>
                         }>
-                        <Route path="/integrations" element={<UserIntegrations />} />
+                            <Route path="/integrations" element={<UserIntegrations />} />
+                            <Route path="/documents" element={<DocumentList />} />
                         </Route>
                     </Routes>
                 </Router>

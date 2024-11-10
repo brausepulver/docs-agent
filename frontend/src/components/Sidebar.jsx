@@ -14,21 +14,9 @@ const Sidebar = () => {
     const location = useLocation();
 
     const menuItems = [
-        {
-            path: '/dashboard',
-            name: 'Dashboard',
-            icon: LayoutDashboard
-        },
-        {
-            path: '/documents',
-            name: 'Documents',
-            icon: FileText
-        },
-        {
-            path: '/integrations',
-            name: 'Integrations',
-            icon: Settings
-        }
+        { path: '/dashboard', name: 'Dashboard', icon: LayoutDashboard },
+        { path: '/documents', name: 'Documents', icon: FileText },
+        { path: '/integrations', name: 'Integrations', icon: Settings }
     ];
 
     const isActive = (path) => location.pathname === path;
