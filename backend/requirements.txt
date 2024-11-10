@@ -2,12 +2,13 @@ fastapi
 python-dotenv
 llama-index
 llama-index-embeddings-nvidia
-google-api-python-client
-google-auth
+google-auth-oauthlib
 google-auth-httplib2
+google-api-python-client
 python-jose[cryptography]
 python-multipart
 requests
 pydantic-settings
 jwt
 uvicorn
+apscheduler

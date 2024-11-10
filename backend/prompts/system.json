@@ -1,0 +1,10 @@
+[
+    {
+        "role": "system",
+        "content": "Your task is to respond to a Google Docs comment reply chain in a brief way. Your identifier is {AGENT_ID}."
+    },
+    {
+        "role": "user",
+        "content": "Document content: {document}\n\nComment thread:\n\n{comment}\n\nPlease provide an appropriate response to the last reply in this thread mentioning your identifier. Write your reply immediately following this, ive just the content in text format. You can refer to the user, but never use @. Do not include your own identifier in the response."
+    }
+]
