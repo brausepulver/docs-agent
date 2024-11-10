@@ -48,7 +48,7 @@ Fill in the required environment variables.
 `CREDENTIALS_FILE` should point to the given `credentials.json` file (given in the submission form). Place in `/backend/credentials.json` to match the default setting.
 
 Generate an encryption key and set the `ENCRYPTION_KEY` env var:
-```
+```bash
 python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
 ```
 
@@ -59,14 +59,20 @@ docker run -d --name docs-agent-db -e POSTGRES_USER=docs_agent_user -e POSTGRES_
 
 By default this corresponds to the `DATABASE_URL` env var.
 
-5. Start the development server:
+5. Run the database migrations:
+```bash
+cd backend/
+alembic upgrade head
+```
+
+6. Start the development server:
 ```bash
 uvicorn app.main:app --reload
 ```
 
 The backend will be available at `http://localhost:8000`
 
-6. Sign in with the agent user:
+7. Sign in with the agent user:
 - A sign-in with Google form will open on first launch.
 - Log in with the agent user try.doccy@gmail.com (given by the `AGENT_ID` env var).
 - Continue.
