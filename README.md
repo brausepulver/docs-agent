@@ -38,13 +38,14 @@ source venv/bin/activate  # On Windows: .\venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-3. Create `.env` file (or copy example) in `backend/` with:
-```env
-AUTH0_DOMAIN=your-tenant.auth0.com
-AUTH0_API_AUDIENCE=docsagent-api
-NVIDIA_API_KEY=your-nvidia-key
-SERVICE_ACCOUNT_FILE=path-to-service-account
+3. Copy `.env.example` to `.env` in `backend/` with:
+```bash
+cp .env.example .env
 ```
+
+Fill in the required environment variables.
+
+`CREDENTIALS_FILE` should point to the given `credentials.json` file (given in the submission form). Place in `/backend/credentials.json` to match the default setting.
 
 4. Start the development server:
 ```bash
@@ -52,6 +53,12 @@ uvicorn app.main:app --reload
 ```
 
 The backend will be available at `http://localhost:8000`
+
+5. Sign in with the agent user:
+- A sign-in with Google form will open on first launch.
+- Log in with the agent user try.doccy@gmail.com (given by the `AGENT_ID` env var).
+- Continue.
+- Select access to Drive and Docs.
 
 ### Frontend Setup
 
