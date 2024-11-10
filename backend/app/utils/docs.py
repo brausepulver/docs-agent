@@ -146,12 +146,12 @@ def list_changes(drive_service, page_token):
 
   try:
     while page_token is not None:
-      response = drive_service.changes().list(pageToken=page_token, spaces="drive", restrictToMyDrive=False, includeItemsFromAllDrives=True, supportsAllDrives=True).execute()
-      changes.extend(response.get("changes", []))
-      if "newStartPageToken" in response:
-          page_token = response.get("newStartPageToken")
-          break
-      page_token = response.get("nextPageToken", response.get("newStartPageToken"))
+        response = drive_service.changes().list(pageToken=page_token, spaces="drive", restrictToMyDrive=False, includeItemsFromAllDrives=True, supportsAllDrives=True).execute()
+        changes.extend(response.get("changes", []))
+        if "newStartPageToken" in response:
+            page_token = response.get("newStartPageToken")
+            break
+        page_token = response.get("nextPageToken", response.get("newStartPageToken"))
 
   except HttpError as error:
     print(f"Error fetching changes: {error}")
@@ -240,28 +240,54 @@ def should_process_comment(comment):
 
     return False
 
+def get_initial_comments(drive_service, accessed):
+    comments = []
+
+    try:
+        results = drive_service.files().list(
+            q="sharedWithMe",
+            fields="files(id, viewedByMeTime)",
+            supportsAllDrives=True,
+            includeItemsFromAllDrives=True
+        ).execute()
+
+        for file in results.get("files", []):
+            file_id = file.get("id")
+            if file.get("viewedByMeTime") or (file_id in accessed): continue
+            accessed.add(file_id)
+
+            comments = list_comments_for_file(drive_service, file_id)
+            comments.extend(map(lambda comment: (file_id, comment), comments))
+
+    except Exception as e:
+        print(f"Error activating files: {e}")
+        raise
+
+    return comments
+
 def create_process_comments():
     drive_service, docs_service = create_services()
     page_token = get_start_page_token(drive_service)
     processing = set()
+    accessed = set()
 
     async def process_comments(stop_event):
+        file_comments = get_initial_comments(drive_service, accessed)
+
         nonlocal page_token
         changes, page_token = list_changes(drive_service, page_token)
 
         for change in changes:
             if stop_event.is_set(): break
-
             file_id = change.get("fileId")
-            if not file_id: continue
+            if not file_id or change.get("removed"): continue
+            file_comments.extend(map(lambda comment: (file_id, comment), list_comments_for_file(drive_service, file_id)))
 
-            comments = list_comments_for_file(drive_service, file_id)
-            comments = list(filter(should_process_comment, comments))
+        file_comments = list(filter(lambda pair: should_process_comment(pair[1]), file_comments))
+        for file_id, comment in file_comments:
+            if comment.get("id") in processing: continue
 
-            for comment in comments:
-                if comment.get("id") in processing: continue
-
-                processing.add(comment.get("id"))
-                asyncio.create_task(process_comment(file_id, comment, processing, drive_service, docs_service, stop_event))
+            processing.add(comment.get("id"))
+            asyncio.create_task(process_comment(file_id, comment, processing, drive_service, docs_service, stop_event))
 
     return process_comments
