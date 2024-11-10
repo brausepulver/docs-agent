@@ -8,7 +8,7 @@ from .utils.docs import create_process_comments
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from contextlib import asynccontextmanager
 import asyncio
-from .routers import auth, docs
+from .routers import auth, docs, repos
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
@@ -36,3 +36,4 @@ app.add_middleware(
 
 app.include_router(auth.router)
 app.include_router(docs.router)
+app.include_router(repos.router)

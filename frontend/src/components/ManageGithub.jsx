@@ -1,40 +1,48 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Github, Check, ChevronLeft, ExternalLink, Star } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import '../styles/ManageGithub.css';
+import { useAuth } from '../context/AuthContext';
 
 const ManageGithub = () => {
-    const [repositories, setRepositories] = useState([
-        {
-            id: 1,
-            name: 'awesome-project',
-            description: 'A really awesome project with lots of documentation',
-            isPrivate: false,
-            enabled: true,
-            stars: 128,
-            url: 'https://github.com/username/awesome-project'
-        },
-        {
-            id: 2,
-            name: 'documentation-repo',
-            description: 'Technical documentation and guides for the team',
-            isPrivate: true,
-            enabled: false,
-            stars: 45,
-            url: 'https://github.com/username/documentation-repo'
-        },
-        {
-            id: 3,
-            name: 'blog-posts',
-            description: 'Collection of technical blog posts and articles',
-            isPrivate: false,
-            enabled: true,
-            stars: 89,
-            url: 'https://github.com/username/blog-posts'
-        }
-    ]);
-
+    const [repositories, setRepositories] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [loadingRepos, setLoadingRepos] = useState(true);
+    const [error, setError] = useState(null);
+    const navigate = useNavigate();
+    const { createAuthenticatedAxios } = useAuth();
+
+    useEffect(() => {
+        const fetchRepositories = async () => {
+            setLoadingRepos(true);
+            try {
+                const axiosInstance = await createAuthenticatedAxios();
+                const response = await axiosInstance.get('/api/github/repositories');
+                const repos = response.data;
+                const formattedRepos = repos.map(repo => ({
+                    id: repo.id,
+                    name: repo.name,
+                    description: repo.description || '',
+                    private: repo.private,
+                    enabled: repo.enabled,
+                    stars: repo.stars,
+                    html_url: repo.html_url
+                }));
+                setRepositories(formattedRepos);
+            } catch (err) {
+                console.error(err);
+                if (err.response && err.response.status === 400 && err.response.data.detail === "GitHub not connected") {
+                    navigate('/integrations');
+                } else {
+                    setError('Failed to load repositories.');
+                }
+            } finally {
+                setLoadingRepos(false);
+            }
+        };
+
+        fetchRepositories();
+    }, [createAuthenticatedAxios, navigate]);
 
     const toggleRepository = (repoId) => {
         setRepositories(repos =>
@@ -48,10 +56,26 @@ const ManageGithub = () => {
 
     const saveChanges = async () => {
         setLoading(true);
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        setLoading(false);
+        try {
+            const selectedRepos = repositories.filter(repo => repo.enabled);
+            const axiosInstance = await createAuthenticatedAxios();
+            await axiosInstance.post('/api/github/save-repositories', { repositories: selectedRepos });
+            // You can show a success message or navigate away
+        } catch (error) {
+            console.error(error);
+            // Handle error (e.g., show an error message)
+        } finally {
+            setLoading(false);
+        }
     };
+
+    if (loadingRepos) {
+        return <div>Loading repositories...</div>;
+    }
+
+    if (error) {
+        return <div>Error: {error}</div>;
+    }
 
     return (
         <div className="user-page">
@@ -78,7 +102,7 @@ const ManageGithub = () => {
                             <div className="repository-header">
                                 <div className="repository-header-content">
                                     <h3 className="repository-name">{repo.name}</h3>
-                                    {repo.isPrivate && (
+                                    {repo.private && (
                                         <span className="private-badge">
                                             Private
                                         </span>
@@ -99,7 +123,7 @@ const ManageGithub = () => {
                                 <p className="repository-description">{repo.description}</p>
                                 <div className="repository-footer">
                                     <a
-                                        href={repo.url}
+                                        href={repo.html_url}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className="repository-link"
