@@ -8,6 +8,7 @@ import DocumentList from './components/DocumentList';
 import AuthPage from './components/AuthPage';
 import ComingSoon from './components/ComingSoon';
 import ProtectedRoute from './components/ProtectedRoute';
+import ManageGithub from './components/ManageGithub';
 
 const auth0Config = {
     domain: import.meta.env.VITE_AUTH0_DOMAIN,
@@ -37,6 +38,7 @@ function App() {
                             </ProtectedRoute>
                         }>
                             <Route path="/dashboard" element={<ComingSoon />} />
+                            <Route path="/integrations/github" element={<ManageGithub />} />
                             <Route path="/integrations" element={<UserIntegrations />} />
                             <Route path="/documents" element={<DocumentList />} />
                         </Route>

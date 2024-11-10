@@ -4,7 +4,7 @@ import '../styles/DocumentList.css';
 import { useAuth } from '../context/AuthContext';
 
 const DocumentList = () => {
-    const { createAuthenticatedAxios } = useAuth();
+    const { createAuthenticatedAxios, user } = useAuth();
     const [documents, setDocuments] = useState([]);
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -127,7 +127,7 @@ const DocumentList = () => {
                         <div className="no-documents">
                             <FileText size={48} className="empty-icon" />
                             <h3>No Documents Found</h3>
-                            <p>Share a Google Doc with the agent to get started.</p>
+                            <p>Share a Google Doc with the agent to get started, use the same Google email ({user.email}) to share the document.</p>
                         </div>
                     )}
                 </div>

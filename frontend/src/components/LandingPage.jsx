@@ -50,7 +50,7 @@ const LandingPage = () => {
         if (isAuthenticated) {
             return (
                 <div className="hero-cta">
-                    <Link to="/integrations" className="btn-primary btn-large">Go to Dashboard</Link>
+                    <Link to="/dashboard" className="btn-primary btn-large">Go to Dashboard</Link>
                 </div>
             );
         }
@@ -95,15 +95,15 @@ const LandingPage = () => {
                 </h1>
 
                 <p className="hero-subtitle">
-                    DocsAgent is your AI-powered document companion that integrates with Google Docs and GitHub. 
+                    DocsAgent is your AI-powered document companion that integrates with Google Docs and GitHub.
                     Get smart suggestions, cross-reference your entire document repository, and collaborate smarter.
                 </p>
 
                 {renderHeroCTA()}
 
                 <div className="hero-image">
-                    <img 
-                        src="/hero-demo.png" 
+                    <img
+                        src="/hero-demo.png"
                         alt="DocsAgent Interface Demo"
                         onError={(e) => {
                             e.target.style.backgroundColor = '#f5f5f5';

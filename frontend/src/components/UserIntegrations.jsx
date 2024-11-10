@@ -1,8 +1,9 @@
-import { FileCheck, FileX, Loader2 } from 'lucide-react';
+import { FileCheck, FileX } from 'lucide-react';
 import '../styles/UserIntegrations.css';
 import { useAuth0 } from '@auth0/auth0-react';
 import { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { Link } from 'react-router-dom';
 
 const UserIntegrations = () => {
     const { createAuthenticatedAxios } = useAuth();
@@ -121,9 +122,6 @@ const UserIntegrations = () => {
                             </div>
                             <p className="integration-description">{integration.description}</p>
                             <div className="integration-bottom">
-                                {integration.comingSoon && (
-                                    <span className="coming-soon-pill">Coming Soon</span>
-                                )}
                                 <div className="integration-actions">
                                     {integration.disabled ? (
                                         <button
@@ -147,6 +145,17 @@ const UserIntegrations = () => {
                                         </a>
                                     )}
                                 </div>
+                                {integration.comingSoon && (
+                                    <span className="coming-soon-pill">Coming Soon</span>
+                                )}
+                                {integration.connected && integration.id === 'github' && (
+                                        <Link
+                                            to="/integrations/github"
+                                            className="btn-manage"
+                                        >
+                                            Manage
+                                        </Link>
+                                    )}
                             </div>
                         </div>
                     ))}
