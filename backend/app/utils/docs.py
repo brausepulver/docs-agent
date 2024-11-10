@@ -377,6 +377,43 @@ def should_process_comment(comment):
 
     return False
 
+def add_initial_greeting(drive_service, file_id: str) -> None:
+    """Add a greeting comment when a document is first shared."""
+    try:
+        greeting = (
+            f"Hi there! 👋 I'm {os.getenv('AGENT_ID')}, your AI writing assistant. "
+            "I'm here to help with your document. You can:\n\n"
+            "• Tag me in any comment by mentioning my name\n"
+            "• Ask for comprehensive document feedback using #feedback\n"
+            "• Quote specific text for targeted feedback\n\n"
+            "Looking forward to helping you improve your document!"
+        )
+
+        add_comment(
+            drive_service=drive_service,
+            file_id=file_id,
+            content=greeting
+        )
+    except Exception as e:
+        print(f"Error adding greeting comment: {e}")
+        raise
+
+def has_agent_commented(drive_service, file_id: str) -> bool:
+    """Check if the agent has already commented on this document."""
+    try:
+        comments = list_comments_for_file(drive_service, file_id, include_resolved=True)
+        return any(
+            comment.get("author", {}).get("me", False)
+            or any(
+                reply.get("author", {}).get("me", False)
+                for reply in comment.get("replies", [])
+            )
+            for comment in comments
+        )
+    except Exception as e:
+        print(f"Error checking for agent comments: {e}")
+        return True  # Assume commented in case of error to prevent duplicate greetings
+
 def get_initial_comments(drive_service, accessed):
     comments = []
 
@@ -394,6 +431,10 @@ def get_initial_comments(drive_service, accessed):
                 continue
             accessed.add(file_id)
 
+            # Check if we need to add an initial greeting
+            if not has_agent_commented(drive_service, file_id):
+                add_initial_greeting(drive_service, file_id)
+
             file_comments = list_comments_for_file(drive_service, file_id)
             comments.extend(map(lambda comment: (file_id, comment), file_comments))
 
@@ -410,6 +451,7 @@ def create_process_comments():
     accessed = set()
 
     async def process_comments(stop_event):
+        # Process initial comments and add greetings for new documents
         file_comments = get_initial_comments(drive_service, accessed)
 
         nonlocal page_token
@@ -419,6 +461,12 @@ def create_process_comments():
             if stop_event.is_set(): break
             file_id = change.get("fileId")
             if not file_id or change.get("removed"): continue
+
+            # Handle newly shared documents
+            if not has_agent_commented(drive_service, file_id) and file_id not in accessed:
+                accessed.add(file_id)
+                add_initial_greeting(drive_service, file_id)
+
             file_comments.extend(map(
                 lambda comment: (file_id, comment),
                 list_comments_for_file(drive_service, file_id)
