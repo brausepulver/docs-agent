@@ -1,4 +1,4 @@
-import { FileCheck, FileX } from 'lucide-react';
+import { FileCheck, FileX, Loader2 } from 'lucide-react';
 import '../styles/UserIntegrations.css';
 import { useAuth0 } from '@auth0/auth0-react';
 import { useCallback, useEffect, useState } from 'react';
@@ -8,6 +8,7 @@ const UserIntegrations = () => {
     const { createAuthenticatedAxios } = useAuth();
     const { getAccessTokenSilently } = useAuth0();
     const [accessToken, setAccessToken] = useState('');
+    const [isLoading, setIsLoading] = useState(true);
 
     const checkStatus = useCallback(async (name) => {
         try {
@@ -27,7 +28,8 @@ const UserIntegrations = () => {
             name: 'Google Docs',
             description: 'Connect your Google Docs account to enable smart document collaboration.',
             icon: '/google-docs-logo.png',
-            connected: false,
+            connected: true,
+            disabled: true
         },
         {
             id: 'github',
@@ -35,14 +37,16 @@ const UserIntegrations = () => {
             description: 'Sync your GitHub repositories to manage code and documents effortlessly.',
             icon: '/github-logo.png',
             connected: false,
-            href: `${import.meta.env.VITE_API_URL}/auth/github`,
+            href: `${import.meta.env.VITE_API_URL}/auth/github`
         },
         {
             id: 'notion',
             name: 'Notion',
             description: 'Link your Notion workspace for seamless knowledge integration.',
             icon: '/notion-logo.png',
-            connected: false
+            connected: false,
+            disabled: true,
+            comingSoon: true
         }
     ]);
 
@@ -57,8 +61,9 @@ const UserIntegrations = () => {
         ).then(statuses => {
             setIntegrations(prev => prev.map(integration => ({
                 ...integration,
-                connected: statuses.find(s => s.id === integration.id)?.connected || false
+                connected: statuses.find(s => s.id === integration.id)?.connected || integration.connected
             })));
+            setIsLoading(false);
         });
     }, [checkStatus]);
 
@@ -115,13 +120,33 @@ const UserIntegrations = () => {
                                 </div>
                             </div>
                             <p className="integration-description">{integration.description}</p>
-                            <div className="integration-actions">
-                                <a
-                                    href={!integration.connected ? `${integration.href}?state=${accessToken}` : '#'}
-                                    className={`${integration.connected ? 'btn-disconnect' : 'btn-connect'} inline-block text-center no-underline`}
-                                >
-                                    {integration.connected ? 'Disconnect' : 'Connect'}
-                                </a>
+                            <div className="integration-bottom">
+                                {integration.comingSoon && (
+                                    <span className="coming-soon-pill">Coming Soon</span>
+                                )}
+                                <div className="integration-actions">
+                                    {integration.disabled ? (
+                                        <button
+                                            className={`btn-disabled ${integration.connected ? 'btn-connected' : ''}`}
+                                            disabled
+                                        >
+                                            {integration.connected ? 'Connected' : 'Connect'}
+                                        </button>
+                                    ) : (
+                                        <a
+                                            href={!integration.connected ? `${integration.href}?state=${accessToken}` : '#'}
+                                            className={`${integration.connected ? 'btn-disconnect' : 'btn-connect'} inline-block text-center no-underline`}
+                                        >
+                                            {isLoading && integration.id === 'github' ? (
+                                                <div className="loading-container-integration">
+                                                    <span>Loading...</span>
+                                                </div>
+                                            ) : (
+                                                integration.connected ? 'Disconnect' : 'Connect'
+                                            )}
+                                        </a>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     ))}

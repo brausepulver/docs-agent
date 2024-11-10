@@ -4,17 +4,14 @@ import {
     LayoutDashboard,
     FileText,
     Settings,
-    User,
     LogOut
 } from 'lucide-react';
 
 import { useAuth } from '../context/AuthContext';
 
 import '../styles/Sidebar.css';
-import { useAuth } from '../context/AuthContext';
 
 const Sidebar = () => {
-    const { logout } = useAuth();
     const location = useLocation();
     const { logout, user } = useAuth();
 
@@ -55,7 +52,7 @@ const Sidebar = () => {
                 <div className="sidebar-footer">
                     <div className="sidebar-user">
                         {user?.picture ? (
-                            <img 
+                            <img
                                 src={user.picture}
                                 alt={user.name}
                                 className="user-avatar"
