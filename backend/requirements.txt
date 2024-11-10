@@ -12,3 +12,7 @@ pydantic-settings
 jwt
 uvicorn
 apscheduler
+cryptography
+sqlalchemy
+asyncpg
+alembic

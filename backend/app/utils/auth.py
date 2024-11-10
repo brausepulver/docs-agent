@@ -2,15 +2,19 @@ import os
 import requests
 from jose import jwt, JWTError
 from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
+from fastapi.security import OAuth2PasswordBearer, HTTPBearer, HTTPAuthorizationCredentials
+from jose import jwt
+import os
+import httpx
+from functools import lru_cache
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+security = HTTPBearer()
 
 AUTH0_DOMAIN = os.getenv("AUTH0_DOMAIN")
 AUTH0_AUDIENCE = os.getenv("AUTH0_AUDIENCE")
 ALGORITHMS = ["RS256"]
 
-# Fetch the JWKS from Auth0
 def get_jwks():
     try:
         response = requests.get(f"https://{AUTH0_DOMAIN}/.well-known/jwks.json")
@@ -43,7 +47,6 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
         if not rsa_key:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Public key not found")
 
-        # Since email is not in the access token, fetch it from the userinfo endpoint
         try:
             userinfo_url = f"https://{AUTH0_DOMAIN}/userinfo"
             headers = {"Authorization": f"Bearer {token}"}
@@ -73,3 +76,35 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Invalid token"
         )
+
+@lru_cache()
+def get_auth0_public_key():
+    url = f"https://{os.getenv('AUTH0_DOMAIN')}/.well-known/jwks.json"
+    response = httpx.get(url)
+    jwks = response.json()
+    return jwks['keys'][0]['x5c'][0]
+
+async def get_current_user_jwt_from_token(
+    token: str
+) -> str:
+    try:
+        public_key = f"-----BEGIN CERTIFICATE-----\n{get_auth0_public_key()}\n-----END CERTIFICATE-----"
+
+        payload = jwt.decode(
+            token,
+            public_key,
+            algorithms=['RS256'],
+            audience=os.getenv('AUTH0_AUDIENCE'),
+            issuer=f"https://{os.getenv('AUTH0_DOMAIN')}/"
+        )
+        return payload
+    except Exception as e:
+        raise HTTPException(
+            status_code=401,
+            detail='Invalid authentication credentials'
+        )
+
+async def get_current_user_jwt(
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+) -> str:
+    return await get_current_user_jwt_from_token(credentials.credentials)

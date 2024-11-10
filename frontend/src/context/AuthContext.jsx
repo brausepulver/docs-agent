@@ -16,15 +16,8 @@ export const AuthProvider = ({ children }) => {
         isLoading
     } = useAuth0();
 
-    const handleLogout = () => {
-        logout({
-            logoutParams: {
-                returnTo: window.location.origin
-            }
-        });
-    };
+    const [isAuthLoading, setIsAuthLoading] = useState(true);
 
-    // Create authenticated axios instance
     const createAuthenticatedAxios = async () => {
         const token = await getAccessTokenSilently();
         return axios.create({
@@ -35,13 +28,40 @@ export const AuthProvider = ({ children }) => {
         });
     };
 
+    useEffect(() => {
+        const login = async () => {
+            if (isAuthenticated && user) {
+                try {
+                    const axios = await createAuthenticatedAxios();
+                    await axios.post(`${import.meta.env.VITE_API_URL}/auth/login`);
+                } catch (error) {
+                    console.error('Error logging in:', error);
+                }
+            }
+            setIsAuthLoading(false);
+        };
+
+        if (!isLoading) {
+            login();
+        }
+    }, [isAuthenticated, user, getAccessTokenSilently, isLoading]);
+
+    const handleLogout = () => {
+        logout({
+            logoutParams: {
+                returnTo: window.location.origin
+            }
+        });
+    };
+
     const value = {
         isAuthenticated,
         login: loginWithRedirect,
         logout: handleLogout,
         user,
         isLoading: isLoading,
-        createAuthenticatedAxios
+        createAuthenticatedAxios,
+        isAuthLoading
     };
 
     return (

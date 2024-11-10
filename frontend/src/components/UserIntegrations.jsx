@@ -1,22 +1,41 @@
-import React, { useState } from 'react';
-import { Github, FileCheck, FileX } from 'lucide-react';
+import { FileCheck, FileX } from 'lucide-react';
 import '../styles/UserIntegrations.css';
+import { useAuth0 } from '@auth0/auth0-react';
+import { useCallback, useEffect, useState } from 'react';
+import { useAuth } from '../context/AuthContext';
 
 const UserIntegrations = () => {
+    const { createAuthenticatedAxios } = useAuth();
+    const { getAccessTokenSilently } = useAuth0();
+    const [accessToken, setAccessToken] = useState('');
+
+    const checkStatus = useCallback(async (name) => {
+        try {
+            const axios = await createAuthenticatedAxios();
+            const response = await axios.get(`/auth/${name}/status`);
+            const { connected } = response.data;
+            return connected;
+        } catch (error) {
+            console.error(`Failed to check ${name} status:`, error);
+            return false;
+        }
+    }, [getAccessTokenSilently]);
+
     const [integrations, setIntegrations] = useState([
         {
             id: 'google-docs',
             name: 'Google Docs',
             description: 'Connect your Google Docs account to enable smart document collaboration.',
             icon: '/google-docs-logo.png',
-            connected: false
+            connected: false,
         },
         {
             id: 'github',
             name: 'GitHub',
             description: 'Sync your GitHub repositories to manage code and documents effortlessly.',
             icon: '/github-logo.png',
-            connected: true
+            connected: false,
+            href: `${import.meta.env.VITE_API_URL}/auth/github`,
         },
         {
             id: 'notion',
@@ -27,13 +46,29 @@ const UserIntegrations = () => {
         }
     ]);
 
-    const toggleConnection = (id) => {
-        setIntegrations(integrations.map(integration => 
-            integration.id === id 
-                ? { ...integration, connected: !integration.connected }
-                : integration
-        ));
-    };
+    useEffect(() => {
+        const integrationsToCheck = integrations.filter(integration => ['github'].includes(integration.id));
+
+        Promise.all(
+            integrationsToCheck.map(async integration => {
+                const connected = await checkStatus(integration.id);
+                return { id: integration.id, connected };
+            })
+        ).then(statuses => {
+            setIntegrations(prev => prev.map(integration => ({
+                ...integration,
+                connected: statuses.find(s => s.id === integration.id)?.connected || false
+            })));
+        });
+    }, [checkStatus]);
+
+    useEffect(() => {
+        const fetchAccessToken = async () => {
+            const token = await getAccessTokenSilently();
+            setAccessToken(token);
+        };
+        fetchAccessToken();
+    }, [getAccessTokenSilently]);
 
     return (
         <div className="user-page">
@@ -57,8 +92,8 @@ const UserIntegrations = () => {
                                             style={{ width: '24px', height: '24px' }}
                                             onError={(e) => {
                                                 e.target.style.display = 'none';
-                                                e.target.parentElement.innerHTML = integration.id === 'github' 
-                                                    ? '<Github size={24} />' 
+                                                e.target.parentElement.innerHTML = integration.id === 'github'
+                                                    ? '<Github size={24} />'
                                                     : '<div style="width: 24px; height: 24px; background-color: #f5f5f5;"></div>';
                                             }}
                                         />
@@ -81,12 +116,12 @@ const UserIntegrations = () => {
                             </div>
                             <p className="integration-description">{integration.description}</p>
                             <div className="integration-actions">
-                                <button
-                                    className={integration.connected ? 'btn-disconnect' : 'btn-connect'}
-                                    onClick={() => toggleConnection(integration.id)}
+                                <a
+                                    href={!integration.connected ? `${integration.href}?state=${accessToken}` : '#'}
+                                    className={`${integration.connected ? 'btn-disconnect' : 'btn-connect'} inline-block text-center no-underline`}
                                 >
                                     {integration.connected ? 'Disconnect' : 'Connect'}
-                                </button>
+                                </a>
                             </div>
                         </div>
                     ))}

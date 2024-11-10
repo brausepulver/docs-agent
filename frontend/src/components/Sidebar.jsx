@@ -11,8 +11,10 @@ import {
 import { useAuth } from '../context/AuthContext';
 
 import '../styles/Sidebar.css';
+import { useAuth } from '../context/AuthContext';
 
 const Sidebar = () => {
+    const { logout } = useAuth();
     const location = useLocation();
     const { logout, user } = useAuth();
 
