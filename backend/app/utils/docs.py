@@ -1,4 +1,5 @@
 import os
+import re
 import pickle
 from typing import List, Dict, Any
 from googleapiclient.discovery import build
@@ -61,14 +62,19 @@ def get_selected_text(document: Dict[str, Any], comment: Dict[str, Any]) -> str:
         return ""
 
     quoted = quoted_content.get('value', {})
-
     return quoted if quoted else ""
 
-def add_comment(drive_service, file_id: str, content: str) -> Dict[str, Any]:
+def add_comment(drive_service, file_id: str, content: str, quoted_text: str = None) -> Dict[str, Any]:
+    """Create an unanchored comment on a Google Doc with quoted content."""
     try:
+        body = { 'content': content }
+
+        if quoted_text:
+            body['quotedFileContent'] = { 'value': quoted_text, 'mimeType': 'text/plain' }
+
         result = drive_service.comments().create(
             fileId=file_id,
-            body={'content': content},
+            body=body,
             fields='id,content,modifiedTime,author'
         ).execute()
         return result
@@ -149,30 +155,36 @@ def list_files(drive_service) -> List[Dict[str, str]]:
     return docs
 
 def get_start_page_token(drive_service):
-  try:
-    response = drive_service.changes().getStartPageToken().execute()
-  except HttpError as error:
-    print(f"Error fetching start page token: {error}")
-    raise
-  return response.get("startPageToken")
+    try:
+        response = drive_service.changes().getStartPageToken().execute()
+    except HttpError as error:
+        print(f"Error fetching start page token: {error}")
+        raise
+    return response.get("startPageToken")
 
 def list_changes(drive_service, page_token):
-  changes = []
+    changes = []
 
-  try:
-    while page_token is not None:
-        response = drive_service.changes().list(pageToken=page_token, spaces="drive", restrictToMyDrive=False, includeItemsFromAllDrives=True, supportsAllDrives=True).execute()
-        changes.extend(response.get("changes", []))
-        if "newStartPageToken" in response:
-            page_token = response.get("newStartPageToken")
-            break
-        page_token = response.get("nextPageToken", response.get("newStartPageToken"))
+    try:
+        while page_token is not None:
+            response = drive_service.changes().list(
+                pageToken=page_token,
+                spaces="drive",
+                restrictToMyDrive=False,
+                includeItemsFromAllDrives=True,
+                supportsAllDrives=True
+            ).execute()
+            changes.extend(response.get("changes", []))
+            if "newStartPageToken" in response:
+                page_token = response.get("newStartPageToken")
+                break
+            page_token = response.get("nextPageToken", response.get("newStartPageToken"))
 
-  except HttpError as error:
-    print(f"Error fetching changes: {error}")
-    raise
+    except HttpError as error:
+        print(f"Error fetching changes: {error}")
+        raise
 
-  return changes, page_token
+    return changes, page_token
 
 def format_comment(comment):
     thread = []
@@ -223,10 +235,102 @@ def format_document(document):
 
     return '\n'.join(filter(None, text_parts))
 
+def get_latest_comment_reply(comment):
+    replies = comment.get("replies", [])
+    if not replies:
+        return comment
+    return get_latest_comment_reply(replies[-1])
+
+async def process_feedback(document: Dict[str, Any], drive_service, file_id: str):
+    """Process document feedback request and create multiple targeted comments."""
+
+    # Load feedback prompt
+    with open(os.getenv("FEEDBACK_PROMPT_FILE"), 'r') as f:
+        prompt = json.loads(f.read())
+        for message in prompt:
+            message["content"] = message["content"].format(
+                document=format_document(document)
+            )
+
+    # Get structured feedback from LLM
+    response = await client.chat.completions.create(
+        model=os.getenv('MODEL_NAME'),
+        messages=prompt,
+        temperature=0.7
+    )
+
+    feedback = response.choices[0].message.content
+    comments = parse_feedback(feedback)
+
+    # Create comments for each feedback item
+    for comment in comments:
+        try:
+            add_comment(
+                drive_service=drive_service,
+                file_id=file_id,
+                content=comment["content"],
+                quoted_text=comment["quoted_text"]
+            )
+        except Exception as e:
+            print(f"Error creating feedback comment: {e}")
+            continue
+
+def parse_feedback(feedback_text: str) -> List[Dict[str, str]]:
+    """Parse the LLM's feedback response into structured comments.
+
+    Expected format from LLM:
+    ---
+    [Section: "quoted text here"]
+    Feedback content here
+    ---
+    [Section: "another quoted text"]
+    More feedback here
+    ---
+    """
+    comments = []
+    sections = feedback_text.split('---\n')
+
+    for section in sections:
+        if not section.strip():
+            continue
+
+        try:
+            # Extract the quoted section and feedback content
+            section_match = re.match(r'\[Section: "(.*?)"\]\s*(.*)',
+                                   section.strip(),
+                                   re.DOTALL)
+
+            if section_match:
+                quoted_text = section_match.group(1)
+                feedback_content = section_match.group(2).strip()
+
+                comments.append({
+                    "content": feedback_content,
+                    "quoted_text": quoted_text
+                })
+
+        except Exception as e:
+            print(f"Error parsing feedback section: {e}")
+            continue
+
+    return comments
+
 async def process_comment(file_id: str, comment: Dict[str, Any], processing: set, drive_service, docs_service, stop_event):
     try:
         document = read_document_content(docs_service, file_id)
 
+        # Check if this is a feedback request
+        if "#feedback" in get_latest_comment_reply(comment)["content"].lower():
+            await process_feedback(document, drive_service, file_id)
+            reply_to_comment(
+                drive_service,
+                file_id,
+                comment.get("id"),
+                "I've reviewed the document and left detailed feedback as comments throughout. Let me know if you'd like me to clarify any points."
+            )
+            return
+
+        # Standard comment processing
         selection = get_selected_text(document, comment)
 
         with open(os.getenv("PROMPT_FILE"), 'r') as f:
@@ -239,7 +343,11 @@ async def process_comment(file_id: str, comment: Dict[str, Any], processing: set
                     selection=selection
                 )
 
-        response = await client.chat.completions.create(model=os.getenv('MODEL_NAME'), messages=prompt, temperature=0.7)
+        response = await client.chat.completions.create(
+            model=os.getenv('MODEL_NAME'),
+            messages=prompt,
+            temperature=0.7
+        )
         reply = response.choices[0].message.content
 
         reply_to_comment(drive_service, file_id, comment.get("id"), reply)
@@ -249,16 +357,23 @@ async def process_comment(file_id: str, comment: Dict[str, Any], processing: set
         processing.remove(comment.get("id"))
 
 def should_process_comment(comment):
-    if comment.get("deleted") or comment.get("resolved") or comment.get("author", {}).get("me"): return False
+    if comment.get("deleted") or comment.get("resolved") or comment.get("author", {}).get("me"):
+        return False
 
     replies = list(filter(lambda reply: not reply.get("deleted"), comment.get("replies", [])))
     def did_reply(replies):
         return any(map(lambda reply: reply.get("author", {}).get("me"), replies))
 
-    if os.getenv('AGENT_ID') in comment.get("content") and not did_reply(replies): return True
+    # Check for feedback request
+    if "#feedback" in get_latest_comment_reply(comment)["content"].lower():
+        return True
+
+    if os.getenv('AGENT_ID') in comment.get("content") and not did_reply(replies):
+        return True
 
     for i, reply in enumerate(replies):
-        if os.getenv('AGENT_ID') in reply.get("content") and not did_reply(replies[i+1:]): return True
+        if os.getenv('AGENT_ID') in reply.get("content") and not did_reply(replies[i+1:]):
+            return True
 
     return False
 
@@ -275,11 +390,12 @@ def get_initial_comments(drive_service, accessed):
 
         for file in results.get("files", []):
             file_id = file.get("id")
-            if file.get("viewedByMeTime") or (file_id in accessed): continue
+            if file.get("viewedByMeTime") or (file_id in accessed):
+                continue
             accessed.add(file_id)
 
-            comments = list_comments_for_file(drive_service, file_id)
-            comments.extend(map(lambda comment: (file_id, comment), comments))
+            file_comments = list_comments_for_file(drive_service, file_id)
+            comments.extend(map(lambda comment: (file_id, comment), file_comments))
 
     except Exception as e:
         print(f"Error activating files: {e}")
@@ -303,13 +419,22 @@ def create_process_comments():
             if stop_event.is_set(): break
             file_id = change.get("fileId")
             if not file_id or change.get("removed"): continue
-            file_comments.extend(map(lambda comment: (file_id, comment), list_comments_for_file(drive_service, file_id)))
+            file_comments.extend(map(
+                lambda comment: (file_id, comment),
+                list_comments_for_file(drive_service, file_id)
+            ))
 
         file_comments = list(filter(lambda pair: should_process_comment(pair[1]), file_comments))
         for file_id, comment in file_comments:
-            if comment.get("id") in processing: continue
+            if comment.get("id") in processing:
+                continue
 
             processing.add(comment.get("id"))
-            asyncio.create_task(process_comment(file_id, comment, processing, drive_service, docs_service, stop_event))
+            asyncio.create_task(
+                process_comment(
+                    file_id, comment, processing,
+                    drive_service, docs_service, stop_event
+                )
+            )
 
     return process_comments
