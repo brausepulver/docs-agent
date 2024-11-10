@@ -316,17 +316,33 @@ def parse_feedback(feedback_text: str) -> List[Dict[str, str]]:
     return comments
 
 async def process_comment(file_id: str, comment: Dict[str, Any], processing: set, drive_service, docs_service, stop_event):
+    # Add a processing reply first
+    processing_reply = reply_to_comment(
+        drive_service,
+        file_id,
+        comment.get("id"),
+        "Taking a look 👀"
+    )
+
     try:
         document = read_document_content(docs_service, file_id)
 
         # Check if this is a feedback request
         if "#feedback" in get_latest_comment_reply(comment)["content"].lower():
             await process_feedback(document, drive_service, file_id)
+
+            # Delete the processing reply and create a new one
+            drive_service.replies().delete(
+                fileId=file_id,
+                commentId=comment.get("id"),
+                replyId=processing_reply.get("id")
+            ).execute()
+
             reply_to_comment(
                 drive_service,
                 file_id,
                 comment.get("id"),
-                "I've reviewed the document and left detailed feedback as comments throughout. Let me know if you'd like me to clarify any points."
+                "I've reviewed the document and left detailed feedback as comments throughout. Let me know if you'd like me to clarify any points. The comments are available in the right sidebar."
             )
             return
 
@@ -350,9 +366,38 @@ async def process_comment(file_id: str, comment: Dict[str, Any], processing: set
         )
         reply = response.choices[0].message.content
 
-        reply_to_comment(drive_service, file_id, comment.get("id"), reply)
+        # Delete the processing reply and create a new one
+        drive_service.replies().delete(
+            fileId=file_id,
+            commentId=comment.get("id"),
+            replyId=processing_reply.get("id")
+        ).execute()
+
+        reply_to_comment(
+            drive_service,
+            file_id,
+            comment.get("id"),
+            reply
+        )
+
     except Exception as e:
         print(f"Error while processing comment: {e}")
+        # Delete the processing reply and create error message
+        try:
+            drive_service.replies().delete(
+                fileId=file_id,
+                commentId=comment.get("id"),
+                replyId=processing_reply.get("id")
+            ).execute()
+
+            reply_to_comment(
+                drive_service,
+                file_id,
+                comment.get("id"),
+                "I apologize, but I encountered an error while processing your request. Please try again."
+            )
+        except Exception as update_error:
+            print(f"Error handling reply update: {update_error}")
     finally:
         processing.remove(comment.get("id"))
 
