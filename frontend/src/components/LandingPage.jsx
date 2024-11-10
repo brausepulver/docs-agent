@@ -24,7 +24,7 @@ const LandingPage = () => {
         if (isAuthenticated) {
             return (
                 <div className="nav-buttons">
-                    <Link to="/integrations" className="btn-secondary">
+                    <Link to="/dashboard" className="btn-secondary">
                         Dashboard
                     </Link>
                     <button onClick={logout} className="btn-primary">

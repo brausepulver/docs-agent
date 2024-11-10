@@ -6,6 +6,7 @@ import UserIntegrations from './components/UserIntegrations';
 import DashboardLayout from './components/DashboardLayout';
 import DocumentList from './components/DocumentList';
 import AuthPage from './components/AuthPage';
+import ComingSoon from './components/ComingSoon';
 import ProtectedRoute from './components/ProtectedRoute';
 
 const auth0Config = {
@@ -35,6 +36,7 @@ function App() {
                                 <DashboardLayout />
                             </ProtectedRoute>
                         }>
+                            <Route path="/dashboard" element={<ComingSoon />} />
                             <Route path="/integrations" element={<UserIntegrations />} />
                             <Route path="/documents" element={<DocumentList />} />
                         </Route>

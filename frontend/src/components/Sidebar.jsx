@@ -8,10 +8,14 @@ import {
     LogOut
 } from 'lucide-react';
 
+import { useAuth } from '../context/AuthContext';
+
 import '../styles/Sidebar.css';
 
 const Sidebar = () => {
     const location = useLocation();
+
+    const { logout } = useAuth();
 
     const menuItems = [
         { path: '/dashboard', name: 'Dashboard', icon: LayoutDashboard },
@@ -53,7 +57,7 @@ const Sidebar = () => {
                             <span className="user-email">john@example.com</span>
                         </div>
                     </div>
-                    <button className="sidebar-logout">
+                    <button className="sidebar-logout" onClick={logout}>
                         <LogOut size={20} />
                         <span>Log out</span>
                     </button>
