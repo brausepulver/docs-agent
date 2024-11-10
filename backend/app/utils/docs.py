@@ -43,11 +43,26 @@ def create_services():
 
 def read_document_content(docs_service, document_id: str) -> Dict[str, Any]:
     try:
-        document = docs_service.documents().get(documentId=document_id).execute()
+        document = docs_service.documents().get(
+            documentId=document_id,
+            fields='body,documentId,documentStyle,namedStyles,revisionId,suggestionsViewMode'
+        ).execute()
         return document
     except Exception as e:
         print(f"Error reading document: {e}")
         raise
+
+def get_selected_text(document: Dict[str, Any], comment: Dict[str, Any]) -> str:
+    if 'quotedFileContent' not in comment:
+        return ""
+
+    quoted_content = comment['quotedFileContent'] if 'quotedFileContent' in comment else {}
+    if not quoted_content:
+        return ""
+
+    quoted = quoted_content.get('value', {})
+
+    return quoted if quoted else ""
 
 def add_comment(drive_service, file_id: str, content: str) -> Dict[str, Any]:
     try:
@@ -84,7 +99,7 @@ def list_comments_for_file(drive_service, file_id: str, include_resolved: bool =
                 fileId=file_id,
                 pageSize=100,
                 pageToken=page_token,
-                fields='comments(id,content,modifiedTime,author,replies,resolved,deleted),nextPageToken',
+                fields='comments(id,content,modifiedTime,author,replies,resolved,deleted,quotedFileContent)',
                 includeDeleted=False
             ).execute()
 
@@ -212,10 +227,17 @@ async def process_comment(file_id: str, comment: Dict[str, Any], processing: set
     try:
         document = read_document_content(docs_service, file_id)
 
+        selection = get_selected_text(document, comment)
+
         with open(os.getenv("PROMPT_FILE"), 'r') as f:
             prompt = json.loads(f.read())
             for message in prompt:
-                message["content"] = message["content"].format(AGENT_ID=os.getenv('AGENT_ID'), document=format_document(document), comment=format_comment(comment))
+                message["content"] = message["content"].format(
+                    AGENT_ID=os.getenv('AGENT_ID'),
+                    document=format_document(document),
+                    comment=format_comment(comment),
+                    selection=selection
+                )
 
         response = await client.chat.completions.create(model=os.getenv('MODEL_NAME'), messages=prompt, temperature=0.7)
         reply = response.choices[0].message.content
