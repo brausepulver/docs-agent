@@ -14,8 +14,7 @@ import '../styles/Sidebar.css';
 
 const Sidebar = () => {
     const location = useLocation();
-
-    const { logout } = useAuth();
+    const { logout, user } = useAuth();
 
     const menuItems = [
         { path: '/dashboard', name: 'Dashboard', icon: LayoutDashboard },
@@ -24,6 +23,10 @@ const Sidebar = () => {
     ];
 
     const isActive = (path) => location.pathname === path;
+
+    const getUserInitial = (name) => {
+        return name ? name.charAt(0).toUpperCase() : '?';
+    };
 
     return (
         <aside className="sidebar">
@@ -49,12 +52,20 @@ const Sidebar = () => {
 
                 <div className="sidebar-footer">
                     <div className="sidebar-user">
-                        <div className="user-avatar">
-                            <User size={20} />
-                        </div>
+                        {user?.picture ? (
+                            <img 
+                                src={user.picture}
+                                alt={user.name}
+                                className="user-avatar"
+                            />
+                        ) : (
+                            <div className="user-avatar user-initial">
+                                {getUserInitial(user?.name)}
+                            </div>
+                        )}
                         <div className="user-info">
-                            <span className="user-name">John Doe</span>
-                            <span className="user-email">john@example.com</span>
+                            <span className="user-name">{user?.name || 'Loading...'}</span>
+                            <span className="user-email">{user?.email || ''}</span>
                         </div>
                     </div>
                     <button className="sidebar-logout" onClick={logout}>
