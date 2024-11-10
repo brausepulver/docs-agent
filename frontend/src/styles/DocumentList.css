@@ -42,6 +42,7 @@
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    position: relative;
 }
 
 .document-card:hover {
@@ -72,7 +73,6 @@
     font-weight: 500;
     color: var(--primary-color);
     margin: 0;
-    /* Add ellipsis for long names */
     text-overflow: ellipsis;
     overflow: hidden;
     white-space: nowrap;
@@ -90,7 +90,6 @@
     font-weight: 500;
     text-decoration: none;
     padding: calc(var(--spacing-unit) * 1.5) calc(var(--spacing-unit) * 3);
-    padding-left: calc(var(--spacing-unit) * 1.5);
     background-color: var(--bg-subtle);
     border-radius: 8px;
     transition: all 0.2s ease;
@@ -138,11 +137,12 @@
 }
 
 .loading-container {
+    grid-column: 1 / -1;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: 400px;
+    min-height: 200px;
     gap: calc(var(--spacing-unit) * 3);
 }
 
@@ -178,10 +178,6 @@
 .retry-button:hover {
     background-color: #333;
     transform: translateY(-1px);
-}
-
-.document-card {
-    position: relative; /* For positioning the remove button */
 }
 
 .remove-button {
@@ -239,4 +235,3 @@
         padding: calc(var(--spacing-unit) * 4) calc(var(--spacing-unit) * 2);
     }
 }
-

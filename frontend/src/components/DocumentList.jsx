@@ -48,22 +48,15 @@ const DocumentList = () => {
         }
     };
 
-    if (loading) {
-        return (
-            <div className="document-page">
-                <div className="document-container">
-                    <div className="loading-container">
-                        <Loader2 className="loading-spinner" size={48} />
-                        <p>Loading your documents...</p>
-                    </div>
-                </div>
-            </div>
-        );
-    }
-
     if (error) return (
         <div className="document-page">
             <div className="document-container">
+                <div className="document-header">
+                    <h1 className="document-title">Your Documents</h1>
+                    <p className="document-subtitle">
+                        Manage your connected Google Docs. Remove documents you no longer want the agent to access.
+                    </p>
+                </div>
                 <div className="error-container">
                     <p className="error-message">{error}</p>
                     <button
@@ -88,7 +81,12 @@ const DocumentList = () => {
                 </div>
 
                 <div className="document-grid">
-                    {documents.length > 0 ? (
+                    {loading ? (
+                        <div className="loading-container">
+                            <Loader2 className="loading-spinner" size={48} />
+                            <p>Loading your documents...</p>
+                        </div>
+                    ) : documents.length > 0 ? (
                         documents.map((doc) => (
                             <div key={doc.id} className="document-card">
                                 <button

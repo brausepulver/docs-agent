@@ -1,7 +1,7 @@
 .github-header {
     display: flex;
     align-items: center;
-    gap: calc(var(--spacing-unit) * 1);
+    gap: calc(var(--spacing-unit) * 2);
     margin-bottom: calc(var(--spacing-unit) * 2);
 }
 
@@ -13,28 +13,25 @@
     justify-content: center;
     background-color: var(--bg-subtle);
     border-radius: 8px;
-}
-
-.github-icon svg {
-    width: 48px;
-    height: 48px;
-    margin-bottom: 25%;
+    color: var(--primary-color);
 }
 
 .repository-grid {
-    display: flex;
-    flex-direction: column;
-    gap: calc(var(--spacing-unit) * 2);
-    margin-top: calc(var(--spacing-unit) * 4);
-    margin-bottom: calc(var(--spacing-unit) * 10);
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: calc(var(--spacing-unit) * 4);
+    margin-top: calc(var(--spacing-unit) * 6);
 }
 
 .repository-card {
     background-color: var(--background-color);
     border: 1px solid var(--border-subtle);
     border-radius: 12px;
-    padding: calc(var(--spacing-unit) * 3);
+    padding: calc(var(--spacing-unit) * 4);
     transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
 .repository-card:hover {
@@ -60,6 +57,9 @@
     font-weight: 500;
     color: var(--primary-color);
     margin: 0;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
 }
 
 .repository-content {
@@ -80,6 +80,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    margin-top: auto;
 }
 
 .repository-link {
@@ -176,7 +177,7 @@
 .save-container {
     display: flex;
     justify-content: flex-end;
-    margin-top: calc(var(--spacing-unit) * 4);
+    margin-top: calc(var(--spacing-unit) * 6);
 }
 
 .save-button {
@@ -201,7 +202,107 @@
     cursor: not-allowed;
 }
 
+.loading-text {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--spacing-unit) * 1);
+}
+
+/* Loading States */
+.loading-container {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+    gap: calc(var(--spacing-unit) * 3);
+}
+
+.loading-container p {
+    color: var(--secondary-color);
+    font-size: 18px;
+}
+
+.loading-spinner {
+    animation: spin 1s linear infinite;
+    color: var(--primary-color);
+}
+
+@keyframes spin {
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* Error States */
+.error-container {
+    text-align: center;
+    padding: calc(var(--spacing-unit) * 8);
+}
+
+.error-message {
+    color: var(--error-color);
+    font-size: 18px;
+    font-weight: 500;
+}
+
+.retry-button {
+    margin-top: calc(var(--spacing-unit) * 3);
+    background-color: var(--primary-color);
+    color: white;
+    padding: calc(var(--spacing-unit) * 1.5) calc(var(--spacing-unit) * 3);
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.retry-button:hover {
+    background-color: #333;
+    transform: translateY(-1px);
+}
+
+/* No Content State */
+.no-documents {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: calc(var(--spacing-unit) * 8);
+    background-color: var(--bg-subtle);
+    border-radius: 12px;
+    border: 2px dashed var(--border-subtle);
+}
+
+.empty-icon {
+    color: var(--secondary-color);
+    margin-bottom: calc(var(--spacing-unit) * 2);
+}
+
+.no-documents h3 {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: calc(var(--spacing-unit) * 2);
+}
+
+.no-documents p {
+    color: var(--secondary-color);
+    font-size: 16px;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .repository-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
 @media (max-width: 768px) {
+    .repository-grid {
+        grid-template-columns: 1fr;
+    }
+
     .repository-header {
         flex-direction: column;
         gap: calc(var(--spacing-unit) * 2);
@@ -232,5 +333,17 @@
     .github-icon {
         width: 40px;
         height: 40px;
+    }
+
+    .document-title {
+        font-size: 32px;
+    }
+
+    .document-subtitle {
+        font-size: 18px;
+    }
+
+    .document-container {
+        padding: calc(var(--spacing-unit) * 4) calc(var(--spacing-unit) * 2);
     }
 }

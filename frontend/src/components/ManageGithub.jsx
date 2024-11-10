@@ -28,7 +28,14 @@ const ManageGithub = () => {
                     stars: repo.stars,
                     html_url: repo.html_url
                 }));
-                setRepositories(formattedRepos);
+                // sort by enabled, then by name
+                setRepositories(formattedRepos.sort((a, b) => {
+                    if (a.enabled === b.enabled) {
+                        return a.name.localeCompare(b.name);
+                    }
+                    return a.enabled ? -1 : 1;
+                }
+                ));
             } catch (err) {
                 console.error(err);
                 if (err.response && err.response.status === 400 && err.response.data.detail === "GitHub not connected") {
@@ -60,27 +67,51 @@ const ManageGithub = () => {
             const selectedRepos = repositories.filter(repo => repo.enabled);
             const axiosInstance = await createAuthenticatedAxios();
             await axiosInstance.post('/api/github/save-repositories', { repositories: selectedRepos });
-            // You can show a success message or navigate away
         } catch (error) {
             console.error(error);
-            // Handle error (e.g., show an error message)
+            setError('Failed to save changes.');
         } finally {
             setLoading(false);
         }
     };
 
-    if (loadingRepos) {
-        return <div>Loading repositories...</div>;
-    }
-
     if (error) {
-        return <div>Error: {error}</div>;
+        return (
+            <div className="document-page">
+                <div className="document-container">
+                    <div className="document-header">
+                        <Link to="/integrations" className="back-button">
+                            <ChevronLeft size={20} />
+                            <span>Back to Integrations</span>
+                        </Link>
+                        <div className="github-header">
+                            <div className="github-icon">
+                                <Github size={24} />
+                            </div>
+                            <h1 className="document-title">GitHub Repositories</h1>
+                        </div>
+                        <p className="document-subtitle">
+                            Select which repositories you want to index for documentation and knowledge retrieval.
+                        </p>
+                    </div>
+                    <div className="error-container">
+                        <p className="error-message">{error}</p>
+                        <button
+                            onClick={() => window.location.reload()}
+                            className="retry-button"
+                        >
+                            Try Again
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
     }
 
     return (
-        <div className="user-page">
-            <div className="user-container">
-                <div className="user-header">
+        <div className="document-page">
+            <div className="document-container">
+                <div className="document-header">
                     <Link to="/integrations" className="back-button">
                         <ChevronLeft size={20} />
                         <span>Back to Integrations</span>
@@ -89,66 +120,86 @@ const ManageGithub = () => {
                         <div className="github-icon">
                             <Github size={24} />
                         </div>
-                        <h1 className="user-title">GitHub Repositories</h1>
+                        <h1 className="document-title">GitHub Repositories</h1>
                     </div>
-                    <p className="user-subtitle">
+                    <p className="document-subtitle">
                         Select which repositories you want to index for documentation and knowledge retrieval.
                     </p>
                 </div>
 
                 <div className="repository-grid">
-                    {repositories.map((repo) => (
-                        <div key={repo.id} className="repository-card">
-                            <div className="repository-header">
-                                <div className="repository-header-content">
-                                    <h3 className="repository-name">{repo.name}</h3>
-                                    {repo.private && (
-                                        <span className="private-badge">
-                                            Private
-                                        </span>
-                                    )}
-                                </div>
-                                <button
-                                    onClick={() => toggleRepository(repo.id)}
-                                    className={`toggle-button ${repo.enabled ? 'enabled' : 'disabled'}`}
-                                >
-                                    <Check
-                                        size={20}
-                                        className={`check-icon ${repo.enabled ? 'visible' : ''}`}
-                                    />
-                                </button>
-                            </div>
-
-                            <div className="repository-content">
-                                <p className="repository-description">{repo.description}</p>
-                                <div className="repository-footer">
-                                    <a
-                                        href={repo.html_url}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="repository-link"
-                                    >
-                                        <span>View Repository</span>
-                                        <ExternalLink size={16} />
-                                    </a>
-                                    <span className="repository-stars">
-                                        <Star size={20}/> {repo.stars}
-                                    </span>
-                                </div>
-                            </div>
+                    {loadingRepos ? (
+                        <div className="loading-container">
+                            <p>Loading your repositories...</p>
                         </div>
-                    ))}
+                    ) : repositories.length > 0 ? (
+                        repositories.map((repo) => (
+                            <div key={repo.id} className="repository-card">
+                                <div className="repository-header">
+                                    <div className="repository-header-content">
+                                        <h3 className="repository-name">{repo.name}</h3>
+                                        {repo.private && (
+                                            <span className="private-badge">
+                                                Private
+                                            </span>
+                                        )}
+                                    </div>
+                                    <button
+                                        onClick={() => toggleRepository(repo.id)}
+                                        className={`toggle-button ${repo.enabled ? 'enabled' : 'disabled'}`}
+                                    >
+                                        <Check
+                                            size={20}
+                                            className={`check-icon ${repo.enabled ? 'visible' : ''}`}
+                                        />
+                                    </button>
+                                </div>
+
+                                <div className="repository-content">
+                                    <p className="repository-description">{repo.description}</p>
+                                    <div className="repository-footer">
+                                        <a
+                                            href={repo.html_url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="repository-link"
+                                        >
+                                            <span>View Repository</span>
+                                            <ExternalLink size={16} />
+                                        </a>
+                                        <span className="repository-stars">
+                                            <Star size={20}/> {repo.stars}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        ))
+                    ) : (
+                        <div className="no-documents">
+                            <Github size={48} className="empty-icon" />
+                            <h3>No Repositories Found</h3>
+                            <p>We couldn't find any repositories in your GitHub account.</p>
+                        </div>
+                    )}
                 </div>
 
-                <div className="save-container">
-                    <button
-                        onClick={saveChanges}
-                        disabled={loading}
-                        className="save-button"
-                    >
-                        {loading ? 'Saving changes...' : 'Save changes'}
-                    </button>
-                </div>
+                {repositories.length > 0 && (
+                    <div className="save-container">
+                        <button
+                            onClick={saveChanges}
+                            disabled={loading}
+                            className="save-button"
+                        >
+                            {loading ? (
+                                <span className="loading-text">
+                                    Saving changes...
+                                </span>
+                            ) : (
+                                'Save changes'
+                            )}
+                        </button>
+                    </div>
+                )}
             </div>
         </div>
     );
