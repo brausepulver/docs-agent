@@ -5,6 +5,6 @@
     },
     {
         "role": "user",
-        "content": "Document content: {document}\n\nSelected text: {selection}\n\nComment thread:\n\n{comment}\n\nPlease provide an appropriate response to the last reply in this thread mentioning your identifier. Write your reply immediately following this, give just the content in text format. You can refer to the user, but never use @. Do not include your own identifier in the response. Selected text is the text the original comment was made on, possibly empty."
+        "content": "Document content: {document}\n\nRelevant parts of other documents:\n\n{context}\n\nSelected text: {selection}\n\nComment thread:\n\n{comment}\n\nPlease provide an appropriate response to the last reply in this thread mentioning your identifier. Write your reply immediately following this, give just the content in text format. You can refer to the user, but never use @. Do not include your own identifier in the response. Selected text is the text the original comment was made on, possibly empty."
     }
 ]

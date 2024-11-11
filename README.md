@@ -54,7 +54,7 @@ python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().d
 
 4. Start the database container:
 ```bash
-docker run -d --name docs-agent-db -e POSTGRES_USER=docs_agent_user -e POSTGRES_PASSWORD=password -e POSTGRES_DB=docs_agent -p 5432:5432 postgres:latest
+docker run -d --name docs-agent-db -e POSTGRES_USER=docs_agent_user -e POSTGRES_PASSWORD=password -e POSTGRES_DB=docs_agent -p 5432:5432 ankane/pgvector
 ```
 
 By default this corresponds to the `DATABASE_URL` env var.

@@ -4,11 +4,12 @@ load_dotenv()
 import os
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI
-from .utils.docs import create_process_comments
+from .utils.docs import create_process_comments, create_process_gdrive
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from contextlib import asynccontextmanager
 import asyncio
 from .routers import auth, docs, repos
+from datetime import datetime
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
@@ -16,7 +17,11 @@ async def lifespan(_: FastAPI):
     stop_event = asyncio.Event()
 
     process_comments = create_process_comments()
-    scheduler.add_job(process_comments, 'cron', second='*/1', args=[stop_event])
+    scheduler.add_job(process_comments, 'cron', second='*/1', args=[stop_event], next_run_time=datetime.now())
+
+    process_gdrive = create_process_gdrive()
+    scheduler.add_job(process_gdrive, 'cron', second='*/30', args=[stop_event], next_run_time=datetime.now())
+
     scheduler.start()
 
     yield

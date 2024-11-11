@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 import httpx
 import os
-from ..utils.auth import get_current_user_jwt_from_token, get_current_user_jwt
+from ..utils.auth import get_current_user_jwt_from_token, get_current_user_jwt, get_current_user
 from ..utils.db import get_db
 from ..utils.crypto import encrypt_token
 from ..models import User
@@ -31,6 +31,7 @@ async def exchange_code_for_token(code: str) -> dict:
 @router.post("/auth/login")
 async def get_user_profile(
     payload = Depends(get_current_user_jwt),
+    user_email = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     auth0_id = payload.get("sub")
@@ -38,7 +39,7 @@ async def get_user_profile(
     user = result.scalar_one_or_none()
 
     if not user:
-        user = User(auth0_id=auth0_id)
+        user = User(auth0_id=auth0_id, email=user_email)
         db.add(user)
         await db.commit()
         await db.refresh(user)

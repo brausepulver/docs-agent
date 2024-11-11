@@ -1,7 +1,9 @@
 fastapi
 python-dotenv
 llama-index
+llama-index-vector-stores-postgres
 llama-index-embeddings-nvidia
+llama-index-readers-google
 google-auth-oauthlib
 google-auth-httplib2
 google-api-python-client

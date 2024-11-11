@@ -1,15 +1,20 @@
 import os
 import re
-import pickle
 from typing import List, Dict, Any
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from googleapiclient.errors import HttpError
+from google.oauth2.credentials import Credentials
 import asyncio
 import json
 from typing import Dict, Any
 from openai import AsyncOpenAI
+from llama_index.core import Document as LlamaDocument, VectorStoreIndex
+from llama_index.readers.google import GoogleDocsReader
+from .db import AsyncSessionLocal
+from sqlalchemy import select, text
+from .llamaindex import gdrive_vector_store, gdrive_storage_context, get_relevant_chunks
 
 client = AsyncOpenAI()
 
@@ -20,9 +25,9 @@ def create_services():
     ]
     creds = None
 
-    if os.path.exists('token.pickle'):
-        with open('token.pickle', 'rb') as token:
-            creds = pickle.load(token)
+    if os.path.exists('token.json'):
+        with open('token.json', 'r') as token:
+            creds = Credentials.from_authorized_user_file("token.json", SCOPES)
 
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
@@ -34,8 +39,8 @@ def create_services():
             )
             creds = flow.run_local_server(port=0)
 
-        with open('token.pickle', 'wb') as token:
-            pickle.dump(creds, token)
+        with open('token.json', 'w') as token:
+            token.write(creds.to_json())
 
     drive_service = build('drive', 'v3', credentials=creds)
     docs_service = build('docs', 'v1', credentials=creds)
@@ -241,16 +246,25 @@ def get_latest_comment_reply(comment):
         return comment
     return get_latest_comment_reply(replies[-1])
 
+def format_chunks(chunks):
+    return "\n\n".join([f"• {chunk.text}" for chunk in chunks])
+
 async def process_feedback(document: Dict[str, Any], drive_service, file_id: str):
     """Process document feedback request and create multiple targeted comments."""
+
+    content = format_document(document)
+    chunks = await get_relevant_chunks(
+        vector_store=gdrive_vector_store,
+        query=content,
+        num_chunks=5,
+        not_doc_id=file_id
+    )
 
     # Load feedback prompt
     with open(os.getenv("FEEDBACK_PROMPT_FILE"), 'r') as f:
         prompt = json.loads(f.read())
         for message in prompt:
-            message["content"] = message["content"].format(
-                document=format_document(document)
-            )
+            message["content"] = message["content"].format(document=content, context=format_chunks(chunks))
 
     # Get structured feedback from LLM
     response = await client.chat.completions.create(
@@ -349,14 +363,24 @@ async def process_comment(file_id: str, comment: Dict[str, Any], processing: set
         # Standard comment processing
         selection = get_selected_text(document, comment)
 
+        content = format_document(document)
+        chunks = await get_relevant_chunks(
+            vector_store=gdrive_vector_store,
+            query=content,
+            num_chunks=5,
+            not_doc_id=file_id
+        )
+        context = format_chunks(chunks)
+
         with open(os.getenv("PROMPT_FILE"), 'r') as f:
             prompt = json.loads(f.read())
             for message in prompt:
                 message["content"] = message["content"].format(
                     AGENT_ID=os.getenv('AGENT_ID'),
-                    document=format_document(document),
+                    document=content,
                     comment=format_comment(comment),
-                    selection=selection
+                    selection=selection,
+                    context=context
                 )
 
         response = await client.chat.completions.create(
@@ -496,7 +520,6 @@ def create_process_comments():
     accessed = set()
 
     async def process_comments(stop_event):
-        # Process initial comments and add greetings for new documents
         file_comments = get_initial_comments(drive_service, accessed)
 
         nonlocal page_token
@@ -531,3 +554,69 @@ def create_process_comments():
             )
 
     return process_comments
+
+def create_process_gdrive():
+    drive_service, _ = create_services()
+    process_lock = asyncio.Lock()
+
+    async def process_gdrive(stop_event):
+        if process_lock.locked(): return
+
+        async with process_lock, AsyncSessionLocal() as db:
+            try:
+                current_files = list_files(drive_service)
+                current_file_ids = {doc['id'] for doc in current_files}
+
+                existing_files = set()
+                try:
+                    query = select(text("DISTINCT metadata_->>'google_doc_id' as doc_id")).select_from(text('data_embeddings_google_drive'))
+                    results = await db.execute(query)
+                    existing_files = {row[0] for row in results if row[0]}
+                except:
+                    print(f"Error querying existing embeddings: {e}")
+                    return
+
+                files_to_process = [
+                    doc for doc in current_files
+                    if doc['id'] not in existing_files
+                ]
+                files_to_remove = existing_files - current_file_ids
+
+                if files_to_remove:
+                    try:
+                        for file_id in files_to_remove:
+                            delete_query = text("DELETE FROM data_embeddings_google_drive WHERE metadata_->>'google_doc_id' = :file_id")
+                            await db.execute(delete_query, {"file_id": file_id})
+                    except Exception as e:
+                        print(f"Error removing embeddings: {e}")
+
+                if files_to_process:
+                    try:
+                        reader = GoogleDocsReader()
+
+                        doc_metadata = {
+                            doc['id']: {
+                                'google_doc_id': doc['id'],
+                                'title': doc['name'],
+                                'owner': doc['owners'][0]['emailAddress'] if doc.get('owners') else None
+                            }
+                            for doc in files_to_process
+                        }
+
+                        documents = reader.load_data(document_ids=[doc['id'] for doc in files_to_process])
+
+                        llama_docs = [
+                            LlamaDocument(
+                                text=document.text,
+                                metadata={**doc_metadata[document.metadata['document_id']], **document.metadata}
+                            )
+                            for document in documents
+                        ]
+
+                        VectorStoreIndex.from_documents(llama_docs, storage_context=gdrive_storage_context, show_progress=True)
+                    except Exception as e:
+                        print(f"Error processing documents: {e}")
+            except Exception as e:
+                print(f"Error processing Google Drive: {e}")
+
+    return process_gdrive
