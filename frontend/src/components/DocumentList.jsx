@@ -125,7 +125,7 @@ const DocumentList = () => {
                         <div className="no-documents">
                             <FileText size={48} className="empty-icon" />
                             <h3>No Documents Found</h3>
-                            <p>Share a Google Doc with the agent to get started, use the same Google email ({user.email}) to share the document.</p>
+                            <p>Share a Google Doc with the agent to get started from your Google email ({user.email}).</p>
                         </div>
                     )}
                 </div>
