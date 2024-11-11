@@ -1,5 +1,9 @@
 # DocsAgent
 
+Try here 👉 https://doccy.me
+
+For deploying yourself, if you need API keys, please request access at https://drive.google.com/drive/folders/1BQg4ZIjLHRR6cL6B3fEU9Lli8wx6vZsG?usp=drive_link
+
 DocsAgent is a document assistant that integrates with various platforms like Google Docs and GitHub, providing AI-powered assistance for document workflows.
 
 ## Project Structure
